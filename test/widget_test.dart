@@ -1,30 +1,30 @@
-// This is a basic Flutter widget test.
-//
-// To perform an interaction with a widget in your test, use the WidgetTester
-// utility in the flutter_test package. For example, you can send tap and scroll
-// gestures. You can also use WidgetTester to find child widgets in the widget
-// tree, read text, and verify that the values of widget properties are correct.
+import 'dart:convert';
 
-import 'package:flutter/material.dart';
-import 'package:flutter_test/flutter_test.dart';
+import 'package:alquran/app/data/models/detail_surah.dart';
+import 'package:alquran/app/data/models/surah.dart';
+import 'package:http/http.dart' as http;
 
-import 'package:alquran/main.dart';
+void main() async {
+  Uri url = Uri.parse("https://api.quran.gading.dev/surah");
+  var res = await http.get(url);
 
-void main() {
-  testWidgets('Counter increments smoke test', (WidgetTester tester) async {
-    // Build our app and trigger a frame.
-    await tester.pumpWidget(const MyApp());
+  var data = (json.decode(res.body) as Map<String, dynamic>)["data"];
 
-    // Verify that our counter starts at 0.
-    expect(find.text('0'), findsOneWidget);
-    expect(find.text('1'), findsNothing);
+  //1-114 -> index ke 113 = annas
 
-    // Tap the '+' icon and trigger a frame.
-    await tester.tap(find.byIcon(Icons.add));
-    await tester.pump();
+  // data dari api (raw data) -> Model (yang sudah disiapkan)
+  Surah surahAnnas = Surah.fromJson(data[113]);
+  // print(surahAnnas.toJson());
 
-    // Verify that our counter has incremented.
-    expect(find.text('0'), findsNothing);
-    expect(find.text('1'), findsOneWidget);
-  });
+  // INI COBA MASUK KE NESTED MODEL
+  // print(surahAnnas.name?.long);
+  Uri urlAnnas =
+      Uri.parse("https://api.quran.gading.dev/surah/${surahAnnas.number}");
+  var resAnnas = await http.get(urlAnnas);
+
+  Map<String, dynamic> dataAnnas =
+      (json.decode(resAnnas.body) as Map<String, dynamic>)["data"];
+  // print(resAnnas.body);
+  DetailSurah annas = DetailSurah.fromJson(dataAnnas);
+  print(annas.verses![4].text!.arab);
 }
